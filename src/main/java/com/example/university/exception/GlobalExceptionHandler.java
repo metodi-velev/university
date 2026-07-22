@@ -42,4 +42,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(ErrorDto.builder().code(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message(exception.getMessage()).build());
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorDto.builder()
+                        .code(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                        .message(exception.getMessage())
+                        .build());
+    }
 }

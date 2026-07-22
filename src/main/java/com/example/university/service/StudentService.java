@@ -6,11 +6,13 @@ import com.example.university.repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
 @Service
+@Transactional
 public class StudentService {
 
     private final StudentRepository repository;
