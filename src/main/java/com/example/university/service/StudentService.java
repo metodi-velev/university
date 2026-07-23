@@ -1,41 +1,49 @@
 package com.example.university.service;
 
 import com.example.university.dto.StudentDto;
+import com.example.university.exception.EmailAlreadyExistsException;
 import com.example.university.exception.StudentNotFoundException;
 import com.example.university.mapper.StudentMapper;
 import com.example.university.repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @Transactional
+@CacheConfig(cacheNames = "students")
 public class StudentService {
 
-    private final StudentRepository repository;
-    private final StudentMapper mapper;
+    private final StudentRepository studentRepository;
+    private final StudentMapper studentMapper;
 
-    public StudentService(StudentRepository repository,
-                          StudentMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
+    public StudentService(StudentRepository studentRepository,
+                          StudentMapper studentMapper) {
+        this.studentRepository = studentRepository;
+        this.studentMapper = studentMapper;
     }
 
     public StudentDto getStudent(Long id) {
-        return mapper
+        return studentMapper
                 .mapStudentToStudentDto(
-                        repository.findById(id)
+                        studentRepository.findById(id)
                                 .orElseThrow(() -> new StudentNotFoundException("Student", "id", String.valueOf(id)))
                 );
     }
 
+    @CacheEvict(allEntries = true)
     public StudentDto save(StudentDto studentDto) {
         try {
-            return mapper.mapStudentToStudentDto(repository.save(mapper.mapStudentDTOtoStudent(studentDto)));
+            validateEmailUniqueness(studentDto.email());
+            return studentMapper.mapStudentToStudentDto(studentRepository.save(studentMapper.mapStudentDTOtoStudent(studentDto)));
         } catch (DataIntegrityViolationException e) {
             Exception cause = (Exception) e.getCause();
 
@@ -52,9 +60,30 @@ public class StudentService {
         }
     }
 
+    private void validateEmailUniqueness(String email) {
+        studentRepository.findByEmail(email)
+                .ifPresentOrElse(
+                        existingStudent -> {
+                            throw new EmailAlreadyExistsException(
+                                    existingStudent.getName(),
+                                    "email",
+                                    email
+                            );
+                        },
+                        () -> log.info("The email {} is free to use.", email)
+                );
+    }
+
     public List<StudentDto> getAllStudents() {
-        return repository.findAll().stream()
-                .map(mapper::mapStudentToStudentDto)
+        return studentRepository.findAll().stream()
+                .map(studentMapper::mapStudentToStudentDto)
                 .toList();
+    }
+
+    @Cacheable(key = "#email")
+    public Optional<StudentDto> findStudentByEmail(String email) {
+        return studentRepository.findByEmail(email)
+                .map(studentMapper::mapStudentToStudentDto)
+                .or(Optional::empty);
     }
 }

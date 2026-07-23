@@ -35,16 +35,18 @@ The project follows a standard Spring Boot layered architecture:
 
 ## 🔌 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/students` | Retrieve a list of all students |
-| GET | `/students/{id}` | Retrieve details of a specific student by ID |
-| POST | `/students` | Create a new student |
+| Method | Endpoint                                                       | Description                                     |
+|--------|----------------------------------------------------------------|-------------------------------------------------|
+| GET | `/students`                                                    | Retrieve a list of all students                 |
+| GET | `/students/{id}`                                               | Retrieve details of a specific student by ID    |
+| GET | `/students/search/findStudentByEmail?email=john.doe@email.com` | Retrieve details of a specific student by email |
+| POST | `/students`                                                    | Create a new student                            |
 
 ### Sample POST Request body
 ```json
 {
-  "name": "John Doe"
+  "name": "John Doe",
+  "email": "john.doe@email.com"
 }
 ```
 
@@ -76,6 +78,8 @@ The project includes several levels of testing:
 - **Unit Tests**: `StudentServiceUnitTest` focuses on business logic in isolation.
 - **Integration Tests**: `StudentServiceIntegrationTest` tests the service layer with a real database context.
 - **Web Layer Tests**: `StudentControllerTest` uses `MockMvc` to test the REST endpoints without starting the full HTTP server.
+- **Repository Tests (JPA)**: `StudentRepositoryTest` and `StudentRepositoryTestcontainersTest` validate the `StudentRepository` functionality. <br>
+  **Note**: The latter uses Testcontainers and requires `Docker` to be running (it spins up a `PostgreSQL` container).
 
 To run all tests:
 ```bash

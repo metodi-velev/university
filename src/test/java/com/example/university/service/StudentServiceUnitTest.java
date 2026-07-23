@@ -31,9 +31,8 @@ class StudentServiceUnitTest {
 
     @Test
     void shouldReturnStudentWhenExists() {
-        // Arrange
-        Student expected = new Student(1L, "John");
-        StudentDto expectedDto = StudentDto.builder().name("John").build();
+        Student expected = new Student(1L, "John", "john@email.com");
+        StudentDto expectedDto = StudentDto.builder().name("John").email("john@email.com").build();
 
         when(repository.findById(1L))
                 .thenReturn(Optional.of(expected));
@@ -41,12 +40,10 @@ class StudentServiceUnitTest {
         when(mapper.mapStudentToStudentDto(expected))
                 .thenReturn(expectedDto);
 
-        // Act
         StudentDto actual = service.getStudent(1L);
 
-        // Assert
-        assertThat(actual).isNotNull();
-        assertThat(actual.getName()).isEqualTo(expected.getName()).isEqualTo("John");
+        assertThat(actual.name()).isEqualTo(expected.getName()).isEqualTo("John");
+        assertThat(actual.email()).isEqualTo(expected.getEmail()).isEqualTo("john@email.com");
 
         verify(repository).findById(1L);
         verifyNoMoreInteractions(repository);
@@ -54,11 +51,9 @@ class StudentServiceUnitTest {
 
     @Test
     void shouldThrowExceptionWhenStudentDoesNotExist() {
-        // Arrange
         when(repository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> service.getStudent(99L))
                 .isInstanceOf(StudentNotFoundException.class)
                 .hasMessage("Student not found with the given input data id: '99'");

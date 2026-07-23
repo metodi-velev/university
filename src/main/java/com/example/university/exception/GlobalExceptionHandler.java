@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
@@ -54,6 +55,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorDto> handleInvalidDateRangeException(DataIntegrityViolationException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity.badRequest().body(ErrorDto.builder().code(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage()).build());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorDto> handleInvalidDateRangeException(MethodArgumentTypeMismatchException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.badRequest().body(ErrorDto.builder().code(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(exception.getMessage()).build());
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorDto> handleEmailAlreadyExistsException(EmailAlreadyExistsException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorDto.builder().code(HttpStatus.CONFLICT.getReasonPhrase())
                 .message(exception.getMessage()).build());
     }
 

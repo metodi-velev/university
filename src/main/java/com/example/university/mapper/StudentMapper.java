@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class StudentMapper {
     public Student mapStudentDTOtoStudent(StudentDto studentDto) {
-        return Student.builder().name(studentDto.getName()).build();
+        return Student.builder().name(studentDto.name()).email(studentDto.email()).build();
     }
 
     public StudentDto mapStudentToStudentDto(Student student) {
-        return StudentDto.builder().name(student.getName()).build();
+        return StudentDto.builder().name(student.getName()).email(student.getEmail()).build();
     }
 }
