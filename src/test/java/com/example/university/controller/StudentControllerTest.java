@@ -1,6 +1,7 @@
 package com.example.university.controller;
 
 import com.example.university.dto.StudentDto;
+import com.example.university.exception.StudentNotFoundException;
 import com.example.university.service.StudentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,10 +96,11 @@ class StudentControllerTest {
 
     @Test
     void shouldReturn500WhenStudentNotFound() throws Exception {
-        when(studentService.getStudent(999L)).thenThrow(new IllegalArgumentException("Student not found"));
+        when(studentService.getStudent(999L)).thenThrow(
+                new StudentNotFoundException("Student", "id", String.valueOf(999L)));
 
         mockMvc.perform(get("/students/999"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test

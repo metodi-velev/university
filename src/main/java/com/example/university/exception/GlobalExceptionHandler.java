@@ -1,6 +1,7 @@
 package com.example.university.exception;
 
 import com.example.university.dto.ErrorDto;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +37,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> validationErrors = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String validationMsg = violation.getMessage();
+            validationErrors.put(fieldName, validationMsg);
+        });
+
+        return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDto> handleInvalidDateRangeException(DataIntegrityViolationException exception) {
         log.error(exception.getMessage(), exception);
@@ -46,9 +60,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException exception) {
         log.error(exception.getMessage(), exception);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDto.builder()
-                        .code(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                        .code(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .message(exception.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleStudentNotFoundException(StudentNotFoundException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorDto.builder()
+                        .code(HttpStatus.NOT_FOUND.getReasonPhrase())
                         .message(exception.getMessage())
                         .build());
     }

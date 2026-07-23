@@ -1,6 +1,7 @@
 package com.example.university.service;
 
 import com.example.university.dto.StudentDto;
+import com.example.university.exception.StudentNotFoundException;
 import com.example.university.mapper.StudentMapper;
 import com.example.university.model.Student;
 import com.example.university.repository.StudentRepository;
@@ -59,8 +60,8 @@ class StudentServiceUnitTest {
 
         // Act & Assert
         assertThatThrownBy(() -> service.getStudent(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Student not found");
+                .isInstanceOf(StudentNotFoundException.class)
+                .hasMessage("Student not found with the given input data id: '99'");
 
         verify(repository).findById(99L);
     }

@@ -1,6 +1,7 @@
 package com.example.university.service;
 
 import com.example.university.dto.StudentDto;
+import com.example.university.exception.StudentNotFoundException;
 import com.example.university.mapper.StudentMapper;
 import com.example.university.repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class StudentService {
         return mapper
                 .mapStudentToStudentDto(
                         repository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException("Student not found"))
+                                .orElseThrow(() -> new StudentNotFoundException("Student", "id", String.valueOf(id)))
                 );
     }
 
